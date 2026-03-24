@@ -29,7 +29,7 @@ class HomeScreen extends StatelessWidget {
             child: Container(
               color: Colors.grey[700],
               child: const Center(
-                child: SosScreen(embedded: true),
+                child: SosScreen(),
               ),
             ),
           ),
