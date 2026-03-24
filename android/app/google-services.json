@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "412210175235",
+    "project_id": "shertified-ssers",
+    "storage_bucket": "shertified-ssers.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:412210175235:android:170476e29477377f735d36",
+        "android_client_info": {
+          "package_name": "com.ennius5.ssers"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAe9a3f-tdyI-5_duNc38NEj5YWDbjOrgY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -168,7 +168,7 @@ class _AdvancedMapState extends State<AdvancedMap> with TickerProviderStateMixin
           children: [
             // Tile Layer
             TileLayer(
-              urlTemplate: 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
+              urlTemplate: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
               subdomains: const ['a', 'b', 'c', 'd'],
               userAgentPackageName: 'com.ennius5.ssers',
               maxZoom: 19,
