@@ -5,12 +5,14 @@ import 'screens/sos_screen.dart';
 import 'widgets/sos_button.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
+import 'screens/get_started_screen.dart';
+import 'screens/phone_signup_screen.dart';
+import 'screens/otp_screen.dart';
+import 'screens/name_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   runApp(const MyApp());
 }
 
@@ -23,30 +25,18 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Map Demo',
       theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // TRY THIS: Try running your application with "flutter run". You'll see
-        // the application has a purple toolbar. Then, without quitting the app,
-        // try changing the seedColor in the colorScheme below to Colors.green
-        // and then invoke "hot reload" (save your changes or press the "hot
-        // reload" button in a Flutter-supported IDE, or press "r" if you used
-        // the command line to start the app).
-        //
-        // Notice that the counter didn't reset back to zero; the application
-        // state is not lost during the reload. To reset the state, use hot
-        // restart instead.
-        //
-        // This works for code too, not just values: Most code changes can be
-        // tested with just a hot reload.
-        colorScheme: .fromSeed(seedColor: Colors.deepPurple),
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
       ),
-      home: const MainScreen(),
-      // home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      home: const GetStartedScreen(),
+      routes: {
+        '/phone_signup': (context) => const PhoneSignupScreen(),
+        '/otp': (context) => const OTPScreen(),
+        '/name': (context) => const NameScreen(),
+        '/trusted_contacts': (context) => const MainScreen(),
+      },
     );
   }
 }
-
-
 
 class MainScreen extends StatelessWidget {
   const MainScreen({super.key});
@@ -73,9 +63,7 @@ class MainScreen extends StatelessWidget {
             flex: 1,
             child: Container(
               color: Colors.grey[700],
-              child: Center(
-                child: SosScreen(),
-              ),
+              child: Center(child: SosScreen()),
             ),
           ),
         ],
@@ -84,26 +72,22 @@ class MainScreen extends StatelessWidget {
   }
 }
 
-class MapScreen extends StatelessWidget{
+class MapScreen extends StatelessWidget {
   const MapScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Advanced Map'),
-      ),
+      appBar: AppBar(title: const Text('Advanced Map')),
       body: AdvancedMap(
         // 📍 Initial position (example: Davao City)
         initialLocation: const LatLng(7.0731, 125.6128),
         initialZoom: 13,
-        
 
         // ✅ Enable features
         showScaleBar: true,
         showZoomControls: true,
         showCurrentLocation: true,
-        
 
         // 🎯 Callbacks (optional but useful)
         onLocationSelected: (point) {
@@ -124,14 +108,17 @@ class MapScreen extends StatelessWidget{
 
         onCameraMoved: (center, zoom) {
           debugPrint('Camera: $center | Zoom: $zoom');
-        
-        onLocationSelected: (point) {
-          print('Lat: ${point.latitude}, Lng: ${point.longitude}');};
+
+          onLocationSelected:
+          (point) {
+            print('Lat: ${point.latitude}, Lng: ${point.longitude}');
+          };
         },
       ),
     );
   }
 }
+
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key, required this.title});
 
