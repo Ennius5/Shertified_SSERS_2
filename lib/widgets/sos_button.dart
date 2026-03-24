@@ -25,7 +25,7 @@ class _SosButtonState extends State<SosButton>
 
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(seconds: 3),
+      duration: const Duration(seconds: 1),
     );
 
     _controller.addStatusListener((status) {
@@ -50,7 +50,7 @@ class _SosButtonState extends State<SosButton>
       _triggered = false;
     });
 
-    _controller.forward(from: 0); // start animation
+    _controller.forward(from: 0);
   }
 
   void _cancelHold() {
@@ -58,7 +58,7 @@ class _SosButtonState extends State<SosButton>
       _isHolding = false;
     });
 
-    _controller.reset(); // stop + reset animation
+    _controller.reset();
   }
 
   Future<void> _sendSOS() async {
@@ -74,13 +74,25 @@ class _SosButtonState extends State<SosButton>
       final locationService = LocationService();
       final sosService = SosService();
 
-      String locationLink = await locationService.getLocationLink();
+      // ✅ Get raw position
+      final position = await locationService.getPosition();
+
+      // ✅ Build message with link
+      String locationLink =
+          locationService.buildMapLink(position.latitude, position.longitude);
+
       String message = "🚨 SOS! I need help!\nLocation: $locationLink";
 
       List<String> numbers =
           widget.contacts.map((c) => c.phone).toList();
 
-      await sosService.sendSOS(contacts: numbers, message: message);
+      // ✅ Send with latitude + longitude
+      await sosService.sendSOS(
+        contacts: numbers,
+        message: message,
+        latitude: position.latitude,
+        longitude: position.longitude,
+      );
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("SOS sent successfully!")),

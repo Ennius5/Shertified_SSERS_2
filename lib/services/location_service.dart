@@ -1,7 +1,7 @@
 import 'package:geolocator/geolocator.dart';
 
 class LocationService {
-  Future<String> getLocationLink() async {
+  Future<Position> getPosition() async {
     bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {
       throw Exception("Location services disabled");
@@ -15,8 +15,11 @@ class LocationService {
       throw Exception("Location permission permanently denied");
     }
 
-    Position position = await Geolocator.getCurrentPosition();
+    return await Geolocator.getCurrentPosition();
+  }
 
-    return "https://maps.google.com/?q=${position.latitude},${position.longitude}";
+  /// Optional: still keep your link generator
+  String buildMapLink(double lat, double lng) {
+    return "https://maps.google.com/?q=$lat,$lng";
   }
 }

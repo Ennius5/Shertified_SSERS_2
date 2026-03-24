@@ -1,4 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:latlong2/latlong.dart';
+import 'widgets/advanced_map.dart';
+import 'screens/sos_screen.dart';
+import 'screens/sos_monitor_screen.dart';
+import 'widgets/sos_button.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 import 'screens/get_started_screen.dart';
@@ -27,6 +32,7 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.red,
         scaffoldBackgroundColor: Colors.grey[200],
       ),
+      home: const SosMonitorScreen(),
       initialRoute: '/',
       routes: {
         '/': (context) => const GetStartedScreen(),

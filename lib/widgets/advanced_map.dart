@@ -82,11 +82,11 @@ class AdvancedMap extends StatefulWidget {
   });
 
   @override
-  State<AdvancedMap> createState() => _AdvancedMapState();
+  State<AdvancedMap> createState() => AdvancedMapState();
+  
 }
 
-class _AdvancedMapState extends State<AdvancedMap>
-    with TickerProviderStateMixin {
+class AdvancedMapState extends State<AdvancedMap> with TickerProviderStateMixin {
   Marker? _currentLocationMarker;
   late MapController _mapController;
   late MapMode _currentMode;
