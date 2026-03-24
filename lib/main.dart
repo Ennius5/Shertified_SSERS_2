@@ -42,6 +42,8 @@ class MyApp extends StatelessWidget {
         '/trusted_contacts': (context) => const TrustedContactsScreen(),
         '/complete': (context) => const CompleteScreen(),
         '/usersos': (context) => const HomeScreen(),
+        '/falseLogout': (context) => const CompleteScreen(),
+        '/lgusos': (context) => const SosMonitorScreen(),
       },
     );
   }
