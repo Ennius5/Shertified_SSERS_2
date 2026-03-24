@@ -51,11 +51,13 @@ class MapScreen extends StatelessWidget{
         // 📍 Initial position (example: Davao City)
         initialLocation: const LatLng(7.0731, 125.6128),
         initialZoom: 13,
+        
 
         // ✅ Enable features
         showScaleBar: true,
         showZoomControls: true,
         showCurrentLocation: true,
+        
 
         // 🎯 Callbacks (optional but useful)
         onLocationSelected: (point) {
@@ -76,6 +78,9 @@ class MapScreen extends StatelessWidget{
 
         onCameraMoved: (center, zoom) {
           debugPrint('Camera: $center | Zoom: $zoom');
+        
+        onLocationSelected: (point) {
+          print('Lat: ${point.latitude}, Lng: ${point.longitude}');};
         },
       ),
     );

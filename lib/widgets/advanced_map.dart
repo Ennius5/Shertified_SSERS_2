@@ -1,7 +1,7 @@
 // lib/widgets/advanced_map.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
-
+import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
 import 'dart:math' as math;
 
@@ -36,6 +36,7 @@ class AdvancedMap extends StatefulWidget {
   
   // Callbacks
   final Function(LatLng)? onLocationSelected;
+  final Function(LatLng)? onCurrentLocation;
   final Function(List<LatLng>)? onPathDrawn;
   final Function(double)? onDistanceMeasured;
   final Function(MapMode)? onModeChanged;
@@ -51,6 +52,7 @@ class AdvancedMap extends StatefulWidget {
   
   const AdvancedMap({
     super.key,
+    this.onCurrentLocation,
     this.initialLocation,
     this.initialZoom = 13.0,
     this.minZoom = 3.0,
@@ -158,11 +160,10 @@ class _AdvancedMapState extends State<AdvancedMap> with TickerProviderStateMixin
           children: [
             // Tile Layer
             TileLayer(
-              urlTemplate: widget.tileServerUrl ?? 
-                  'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-              userAgentPackageName: 'com.example.app',
-              tileProvider: NetworkTileProvider(),
-              subdomains: const ['a', 'b', 'c'],
+  urlTemplate: 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
+  subdomains: const ['a', 'b', 'c', 'd'],
+  userAgentPackageName: 'com.juan.ssers',
+  maxZoom: 19,
             ),
             
             // Markers Layer
@@ -624,16 +625,65 @@ if (widget.showScaleBar)
     });
   }
 
-  Future<void> _centerOnCurrentLocation() async {
-    // Implement location fetching here
-    // For now, show a snackbar
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Implement location service to center on current location'),
-        duration: Duration(seconds: 2),
+Future<void> _centerOnCurrentLocation() async {
+  try {
+    // 1. Check if location services are enabled
+    bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Location services are disabled')),
+      );
+      return;
+    }
+
+    // 2. Check permission
+    LocationPermission permission = await Geolocator.checkPermission();
+
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Location permission denied')),
+        );
+        return;
+      }
+    }
+
+    if (permission == LocationPermission.deniedForever) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Location permission permanently denied')),
+      );
+      return;
+    }
+
+    // 3. Get current position
+    final position = await Geolocator.getCurrentPosition(
+      locationSettings: const LocationSettings(
+        accuracy: LocationAccuracy.high,
       ),
     );
+
+    final latLng = LatLng(position.latitude, position.longitude);
+
+    // 4. Move map
+    _mapController.move(latLng, 16);
+
+    // 5. Save internally (optional but useful)
+    setState(() {
+      _currentCenter = latLng;
+    });
+
+    // 6. 🔥 Send data out (IMPORTANT)
+    if (widget.onLocationSelected != null) {
+      widget.onLocationSelected!(latLng);
+    }
+
+  } catch (e) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Error getting location: $e')),
+    );
   }
+}
 
   double _calculateDistance(LatLng start, LatLng end) {
     const double earthRadius = 6371000; // meters
@@ -795,4 +845,6 @@ double _roundDistance(double distance) {
     return distance.roundToDouble();
   }
 }
+
+
 }

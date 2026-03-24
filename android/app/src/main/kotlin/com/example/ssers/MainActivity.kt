@@ -1,4 +1,4 @@
-package com.example.ssers
+package com.ennius5.ssers
 
 import io.flutter.embedding.android.FlutterActivity
 
