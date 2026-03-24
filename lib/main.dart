@@ -12,7 +12,7 @@ import 'screens/otp_screen.dart';
 import 'screens/name_screen.dart';
 import 'screens/trusted_contacts_screen.dart';
 import 'screens/complete_screen.dart';
-import 'home.dart';
+import 'screens/main_dashboard_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -41,7 +41,7 @@ class MyApp extends StatelessWidget {
         '/name': (context) => const NameScreen(),
         '/trusted_contacts': (context) => const TrustedContactsScreen(),
         '/complete': (context) => const CompleteScreen(),
-        '/usersos': (context) => const HomeScreen(),
+        '/usersos': (context) => const MainDashboardScreen(),
         '/falseLogout': (context) => const CompleteScreen(),
         '/lgusos': (context) => const SosMonitorScreen(),
       },

@@ -28,7 +28,9 @@ class HomeScreen extends StatelessWidget {
             flex: 1,
             child: Container(
               color: Colors.grey[700],
-              child: Center(child: SosScreen()),
+              child: const Center(
+                child: SosScreen(embedded: true),
+              ),
             ),
           ),
         ],
@@ -151,7 +153,7 @@ class _MyHomePageState extends State<MyHomePage> {
           // TRY THIS: Invoke "debug painting" (choose the "Toggle Debug Paint"
           // action in the IDE, or press "p" in the console), to see the
           // wireframe for each widget.
-          mainAxisAlignment: .center,
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
             const Text('You have pushed the button this many times:'),
             Text(
