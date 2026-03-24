@@ -6,10 +6,10 @@ import 'package:latlong2/latlong.dart';
 import 'dart:math' as math;
 
 enum MapMode {
-  view,      // Normal viewing mode
-  select,    // Select a single location
-  draw,      // Draw a path/route
-  measure,   // Measure distances
+  view, // Normal viewing mode
+  select, // Select a single location
+  draw, // Draw a path/route
+  measure, // Measure distances
 }
 
 class AdvancedMap extends StatefulWidget {
@@ -19,7 +19,7 @@ class AdvancedMap extends StatefulWidget {
   final double minZoom;
   final double maxZoom;
   final MapMode initialMode;
-  
+
   // Features
   final bool showZoomControls;
   final bool showCurrentLocation;
@@ -27,13 +27,13 @@ class AdvancedMap extends StatefulWidget {
   final bool showAttribution;
   final bool enableRotation;
   final bool enablePinching;
-  
+
   // Data
   final List<Marker>? initialMarkers;
   final List<Polyline>? initialPolylines;
   final List<Polygon>? initialPolygons;
   final List<LatLng>? initialPath;
-  
+
   // Callbacks
   final Function(LatLng)? onLocationSelected;
   final Function(LatLng)? onCurrentLocation;
@@ -41,7 +41,7 @@ class AdvancedMap extends StatefulWidget {
   final Function(double)? onDistanceMeasured;
   final Function(MapMode)? onModeChanged;
   final Function(LatLng, double)? onCameraMoved;
-  
+
   // Styling
   final Color selectionColor;
   final Color pathColor;
@@ -49,7 +49,7 @@ class AdvancedMap extends StatefulWidget {
   final double pathWidth;
   final String? tileServerUrl;
   final Map<String, dynamic>? tileServerOptions;
-  
+
   const AdvancedMap({
     super.key,
     this.onCurrentLocation,
@@ -83,10 +83,10 @@ class AdvancedMap extends StatefulWidget {
 
   @override
   State<AdvancedMap> createState() => _AdvancedMapState();
-  
 }
 
-class _AdvancedMapState extends State<AdvancedMap> with TickerProviderStateMixin {
+class _AdvancedMapState extends State<AdvancedMap>
+    with TickerProviderStateMixin {
   Marker? _currentLocationMarker;
   late MapController _mapController;
   late MapMode _currentMode;
@@ -97,11 +97,11 @@ class _AdvancedMapState extends State<AdvancedMap> with TickerProviderStateMixin
   LatLng? _selectedPoint;
   // LatLng? _measurementStart;
   // LatLng? _measurementEnd;
-  List<LatLng> _measurementPoints = [];
+  final List<LatLng> _measurementPoints = [];
   bool _isDrawing = false;
   bool _isMeasuring = false;
   AnimationController? _pulseController;
-  
+
   // For performance tracking (unused but kept for future use)
   // ignore: unused_field
   final int _frameCount = 0;
@@ -119,15 +119,15 @@ class _AdvancedMapState extends State<AdvancedMap> with TickerProviderStateMixin
     _pathPoints = List.from(widget.initialPath ?? []);
     _currentCenter = widget.initialLocation ?? const LatLng(51.5, -0.09);
     _currentZoom = widget.initialZoom;
-    
+
     _pulseController = AnimationController(
       duration: const Duration(milliseconds: 1500),
       vsync: this,
     )..repeat(reverse: true);
 
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-    _centerOnCurrentLocation();
-  });
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _centerOnCurrentLocation();
+    });
   }
 
   @override
@@ -162,53 +162,42 @@ class _AdvancedMapState extends State<AdvancedMap> with TickerProviderStateMixin
               if (widget.onCameraMoved != null) {
                 widget.onCameraMoved!(position.center, position.zoom);
               }
-              
             },
           ),
           children: [
             // Tile Layer
             TileLayer(
-              urlTemplate: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
+              urlTemplate:
+                  'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
               subdomains: const ['a', 'b', 'c', 'd'],
               userAgentPackageName: 'com.ennius5.ssers',
               maxZoom: 19,
             ),
-            
+
             if (_pathPoints.isNotEmpty)
               PolylineLayer(
                 polylines: [
                   Polyline(
                     points: _pathPoints,
-                    color: _currentMode == MapMode.draw 
-                        ? widget.pathColor 
+                    color: _currentMode == MapMode.draw
+                        ? widget.pathColor
                         : widget.measurementColor,
                     strokeWidth: widget.pathWidth,
                     // isDotted not available; remove if needed
                   ),
                 ],
               ),
-            
+
             // Existing Polylines
-            if (_polylines.isNotEmpty)
-              PolylineLayer(
-                polylines: _polylines,
-              ),
-            
+            if (_polylines.isNotEmpty) PolylineLayer(polylines: _polylines),
+
             // Existing Polygons
-            if (_polygons.isNotEmpty)
-              PolygonLayer(
-                polygons: _polygons,
-              ),
+            if (_polygons.isNotEmpty) PolygonLayer(polygons: _polygons),
             if (_currentLocationMarker != null)
-              MarkerLayer(
-                markers: [_currentLocationMarker!],
-              ),
+              MarkerLayer(markers: [_currentLocationMarker!]),
             // Markers Layer
-            if (_markers.isNotEmpty)
-              MarkerLayer(
-                markers: _markers,
-              ),
-            
+            if (_markers.isNotEmpty) MarkerLayer(markers: _markers),
+
             // Selected Point Marker
             if (_selectedPoint != null)
               MarkerLayer(
@@ -222,7 +211,7 @@ class _AdvancedMapState extends State<AdvancedMap> with TickerProviderStateMixin
                   ),
                 ],
               ),
-            
+
             // Measurement Markers
             if (_measurementPoints.isNotEmpty)
               MarkerLayer(
@@ -233,23 +222,20 @@ class _AdvancedMapState extends State<AdvancedMap> with TickerProviderStateMixin
                     width: 40,
                     height: 40,
                     child: _buildMeasurementMarker(
-                      index == 0 ? '1' : '${index + 1}', // First point = 1, rest numbered
+                      index == 0
+                          ? '1'
+                          : '${index + 1}', // First point = 1, rest numbered
                     ),
                   );
                 }),
               ),
-            
+
             // Path/Polyline Layer
 
-            
             // Scale Bar
             if (widget.showScaleBar)
-            Positioned(
-              bottom: 20,
-              left: 20,
-              child: _buildScaleBar(),
-            ),
-            
+              Positioned(bottom: 20, left: 20, child: _buildScaleBar()),
+
             // Attribution
             if (widget.showAttribution)
               RichAttributionWidget(
@@ -262,10 +248,10 @@ class _AdvancedMapState extends State<AdvancedMap> with TickerProviderStateMixin
               ),
           ],
         ),
-        
+
         // Custom Controls Overlay
         _buildControlsOverlay(),
-        
+
         // Mode Indicator
         if (_currentMode != MapMode.view)
           Positioned(
@@ -287,7 +273,7 @@ class _AdvancedMapState extends State<AdvancedMap> with TickerProviderStateMixin
               ),
             ),
           ),
-        
+
         // Measurement Result
         if (_measurementPoints.length > 1)
           Positioned(
@@ -313,7 +299,7 @@ class _AdvancedMapState extends State<AdvancedMap> with TickerProviderStateMixin
             tooltip: 'Change Mode',
           ),
           const SizedBox(height: 8),
-          
+
           // Zoom In
           if (widget.showZoomControls)
             _buildControlButton(
@@ -324,10 +310,9 @@ class _AdvancedMapState extends State<AdvancedMap> with TickerProviderStateMixin
               ),
               tooltip: 'Zoom In',
             ),
-          
-          if (widget.showZoomControls)
-            const SizedBox(height: 8),
-          
+
+          if (widget.showZoomControls) const SizedBox(height: 8),
+
           // Zoom Out
           if (widget.showZoomControls)
             _buildControlButton(
@@ -338,10 +323,9 @@ class _AdvancedMapState extends State<AdvancedMap> with TickerProviderStateMixin
               ),
               tooltip: 'Zoom Out',
             ),
-          
-          if (widget.showZoomControls)
-            const SizedBox(height: 8),
-          
+
+          if (widget.showZoomControls) const SizedBox(height: 8),
+
           // Current Location
           if (widget.showCurrentLocation)
             _buildControlButton(
@@ -349,9 +333,9 @@ class _AdvancedMapState extends State<AdvancedMap> with TickerProviderStateMixin
               onPressed: _centerOnCurrentLocation,
               tooltip: 'My Location',
             ),
-          
+
           const SizedBox(height: 8),
-          
+
           // Clear All
           if (_selectedPoint != null || _pathPoints.isNotEmpty)
             _buildControlButton(
@@ -392,7 +376,9 @@ class _AdvancedMapState extends State<AdvancedMap> with TickerProviderStateMixin
             padding: const EdgeInsets.all(12),
             child: Icon(
               icon,
-              color: backgroundColor == Colors.red ? Colors.white : Colors.black87,
+              color: backgroundColor == Colors.red
+                  ? Colors.white
+                  : Colors.black87,
               size: 24,
             ),
           ),
@@ -416,11 +402,7 @@ class _AdvancedMapState extends State<AdvancedMap> with TickerProviderStateMixin
                 shape: BoxShape.circle,
               ),
             ),
-            const Icon(
-              Icons.location_on,
-              color: Colors.red,
-              size: 40,
-            ),
+            const Icon(Icons.location_on, color: Colors.red, size: 40),
           ],
         );
       },
@@ -451,7 +433,7 @@ class _AdvancedMapState extends State<AdvancedMap> with TickerProviderStateMixin
 
   Widget _buildMeasurementCard() {
     final distance = _calculateTotalDistance(_measurementPoints);
-    
+
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
@@ -512,37 +494,37 @@ class _AdvancedMapState extends State<AdvancedMap> with TickerProviderStateMixin
       case MapMode.view:
         // Do nothing in view mode
         break;
-        
+
       case MapMode.select:
-          setState(() {
-            _selectedPoint = point;
-          });
-          if (widget.onLocationSelected != null) {
-            widget.onLocationSelected!(point);
-          }
+        setState(() {
+          _selectedPoint = point;
+        });
+        if (widget.onLocationSelected != null) {
+          widget.onLocationSelected!(point);
+        }
         break;
-        
+
       case MapMode.draw:
-          if (_isDrawing) {
-            setState(() {
-              _pathPoints.add(point);
-            });
-          } else {
-            _startDrawing(point);
-          }
+        if (_isDrawing) {
+          setState(() {
+            _pathPoints.add(point);
+          });
+        } else {
+          _startDrawing(point);
+        }
         break;
 
       case MapMode.measure:
-          setState(() {
-            _measurementPoints.add(point);
-            _pathPoints = List.from(_measurementPoints);
-          });
+        setState(() {
+          _measurementPoints.add(point);
+          _pathPoints = List.from(_measurementPoints);
+        });
 
-          final totalDistance = _calculateTotalDistance(_measurementPoints);
+        final totalDistance = _calculateTotalDistance(_measurementPoints);
 
-          if (widget.onDistanceMeasured != null) {
-            widget.onDistanceMeasured!(totalDistance);
-          }
+        if (widget.onDistanceMeasured != null) {
+          widget.onDistanceMeasured!(totalDistance);
+        }
         break;
     }
   }
@@ -590,16 +572,16 @@ class _AdvancedMapState extends State<AdvancedMap> with TickerProviderStateMixin
     final modes = MapMode.values;
     final currentIndex = modes.indexOf(_currentMode);
     final nextIndex = (currentIndex + 1) % modes.length;
-    
+
     setState(() {
       _currentMode = modes[nextIndex];
       _clearTemporaryData();
     });
-    
+
     if (widget.onModeChanged != null) {
       widget.onModeChanged!(_currentMode);
     }
-    
+
     _showModeToast();
   }
 
@@ -630,89 +612,87 @@ class _AdvancedMapState extends State<AdvancedMap> with TickerProviderStateMixin
     });
   }
 
-Future<void> _centerOnCurrentLocation() async {
-  try {
-    // 1. Check if location services are enabled
-    bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
-    if (!serviceEnabled) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Location services are disabled')),
-      );
-      return;
-    }
-
-    // 2. Check permission
-    LocationPermission permission = await Geolocator.checkPermission();
-
-    if (permission == LocationPermission.denied) {
-      permission = await Geolocator.requestPermission();
-      if (permission == LocationPermission.denied) {
+  Future<void> _centerOnCurrentLocation() async {
+    try {
+      // 1. Check if location services are enabled
+      bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!serviceEnabled) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Location permission denied')),
+          const SnackBar(content: Text('Location services are disabled')),
         );
         return;
       }
-    }
 
-    if (permission == LocationPermission.deniedForever) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Location permission permanently denied')),
+      // 2. Check permission
+      LocationPermission permission = await Geolocator.checkPermission();
+
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+        if (permission == LocationPermission.denied) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Location permission denied')),
+          );
+          return;
+        }
+      }
+
+      if (permission == LocationPermission.deniedForever) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Location permission permanently denied'),
+          ),
+        );
+        return;
+      }
+
+      // 3. Get current position
+      final position = await Geolocator.getCurrentPosition(
+        locationSettings: const LocationSettings(
+          accuracy: LocationAccuracy.high,
+        ),
       );
-      return;
+
+      final latLng = LatLng(position.latitude, position.longitude);
+
+      // 4. Move map
+      _mapController.move(latLng, 16);
+
+      // Add marker
+      setState(() {
+        _currentCenter = latLng;
+        _currentLocationMarker = Marker(
+          point: latLng,
+          width: 50,
+          height: 50,
+          child: const Icon(Icons.my_location, color: Colors.orange, size: 40),
+        );
+      });
+
+      // Send data out
+      if (widget.onCurrentLocation != null) {
+        widget.onCurrentLocation!(latLng);
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error getting location: $e')));
     }
-
-    // 3. Get current position
-    final position = await Geolocator.getCurrentPosition(
-      locationSettings: const LocationSettings(
-        accuracy: LocationAccuracy.high,
-      ),
-    );
-
-    final latLng = LatLng(position.latitude, position.longitude);
-
-    // 4. Move map
-    _mapController.move(latLng, 16);
-
-// Add marker
-setState(() {
-  _currentCenter = latLng;
-  _currentLocationMarker = Marker(
-    point: latLng,
-    width: 50,
-    height: 50,
-    child: const Icon(
-      Icons.my_location,
-      color: Colors.orange,
-      size: 40,
-    ),
-  );
-});
-
-// Send data out
-if (widget.onCurrentLocation != null) {
-  widget.onCurrentLocation!(latLng);
-}
-
-  } catch (e) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Error getting location: $e')),
-    );
   }
-}
 
   double _calculateTotalDistance(List<LatLng> points) {
-  double total = 0;
-  for (int i = 0; i < points.length - 1; i++) {
-    total += _calculateDistance(points[i], points[i + 1]);
+    double total = 0;
+    for (int i = 0; i < points.length - 1; i++) {
+      total += _calculateDistance(points[i], points[i + 1]);
+    }
+    return total;
   }
-  return total;
-}
 
   double _calculateDistance(LatLng start, LatLng end) {
     const double earthRadius = 6371000; // meters
     final dLat = _toRadians(end.latitude - start.latitude);
     final dLon = _toRadians(end.longitude - start.longitude);
-    final a = math.sin(dLat / 2) * math.sin(dLat / 2) +
+    final a =
+        math.sin(dLat / 2) * math.sin(dLat / 2) +
         math.cos(_toRadians(start.latitude)) *
             math.cos(_toRadians(end.latitude)) *
             math.sin(dLon / 2) *
@@ -815,59 +795,56 @@ if (widget.onCurrentLocation != null) {
   }
 
   Widget _buildScaleBar() {
-  // Approximate meters per pixel
-  final metersPerPixel = _getMetersPerPixel(_currentZoom, _currentCenter.latitude);
+    // Approximate meters per pixel
+    final metersPerPixel = _getMetersPerPixel(
+      _currentZoom,
+      _currentCenter.latitude,
+    );
 
-  // Target ~100px width
-  final scaleWidthPx = 100.0;
-  final distanceMeters = metersPerPixel * scaleWidthPx;
+    // Target ~100px width
+    final scaleWidthPx = 100.0;
+    final distanceMeters = metersPerPixel * scaleWidthPx;
 
-  final roundedDistance = _roundDistance(distanceMeters);
+    final roundedDistance = _roundDistance(distanceMeters);
 
-  final adjustedWidth = roundedDistance / metersPerPixel;
+    final adjustedWidth = roundedDistance / metersPerPixel;
 
-  return Container(
-    padding: const EdgeInsets.all(6),
-    decoration: BoxDecoration(
-      color: Colors.white.withOpacity(0.8),
-      borderRadius: BorderRadius.circular(6),
-    ),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Container(
-          width: adjustedWidth,
-          height: 4,
-          color: Colors.black,
-        ),
-        const SizedBox(height: 4),
-        Text(
-          _formatDistance(roundedDistance),
-          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
-        ),
-      ],
-    ),
-  );
-}
-
-double _getMetersPerPixel(double zoom, double latitude) {
-  const earthCircumference = 40075016.686; // meters
-  return earthCircumference *
-      math.cos(_toRadians(latitude)) /
-      math.pow(2, zoom + 8);
-}
-
-double _roundDistance(double distance) {
-  if (distance > 1000) {
-    return (distance / 1000).round() * 1000;
-  } else if (distance > 100) {
-    return (distance / 100).round() * 100;
-  } else if (distance > 10) {
-    return (distance / 10).round() * 10;
-  } else {
-    return distance.roundToDouble();
+    return Container(
+      padding: const EdgeInsets.all(6),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.8),
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(width: adjustedWidth, height: 4, color: Colors.black),
+          const SizedBox(height: 4),
+          Text(
+            _formatDistance(roundedDistance),
+            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+          ),
+        ],
+      ),
+    );
   }
-}
 
+  double _getMetersPerPixel(double zoom, double latitude) {
+    const earthCircumference = 40075016.686; // meters
+    return earthCircumference *
+        math.cos(_toRadians(latitude)) /
+        math.pow(2, zoom + 8);
+  }
 
+  double _roundDistance(double distance) {
+    if (distance > 1000) {
+      return (distance / 1000).round() * 1000;
+    } else if (distance > 100) {
+      return (distance / 100).round() * 100;
+    } else if (distance > 10) {
+      return (distance / 10).round() * 10;
+    } else {
+      return distance.roundToDouble();
+    }
+  }
 }
