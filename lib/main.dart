@@ -32,7 +32,7 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.red,
         scaffoldBackgroundColor: Colors.grey[200],
       ),
-      home: const SosMonitorScreen(),
+      // home: const HomeScreen(),
       initialRoute: '/',
       routes: {
         '/': (context) => const GetStartedScreen(),
@@ -41,7 +41,7 @@ class MyApp extends StatelessWidget {
         '/name': (context) => const NameScreen(),
         '/trusted_contacts': (context) => const TrustedContactsScreen(),
         '/complete': (context) => const CompleteScreen(),
-        '/home': (context) => const HomeScreen(),
+        '/usersos': (context) => const HomeScreen(),
       },
     );
   }

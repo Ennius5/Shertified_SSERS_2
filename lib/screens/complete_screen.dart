@@ -106,7 +106,7 @@ class CompleteScreen extends StatelessWidget {
                     // Navigate to Home Screen and remove all previous routes
                     Navigator.pushNamedAndRemoveUntil(
                       context,
-                      '/home',
+                      '/usersos',
                       (route) => false,
                     );
                   },
@@ -122,4 +122,4 @@ class CompleteScreen extends StatelessWidget {
       ),
     );
   }
-}s
+}
