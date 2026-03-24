@@ -124,6 +124,10 @@ class _AdvancedMapState extends State<AdvancedMap> with TickerProviderStateMixin
       duration: const Duration(milliseconds: 1500),
       vsync: this,
     )..repeat(reverse: true);
+
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+    _centerOnCurrentLocation();
+  });
   }
 
   @override
@@ -164,7 +168,7 @@ class _AdvancedMapState extends State<AdvancedMap> with TickerProviderStateMixin
           children: [
             // Tile Layer
             TileLayer(
-              urlTemplate: 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
+              urlTemplate: 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
               subdomains: const ['a', 'b', 'c', 'd'],
               userAgentPackageName: 'com.ennius5.ssers',
               maxZoom: 19,
@@ -678,7 +682,7 @@ setState(() {
     height: 50,
     child: const Icon(
       Icons.my_location,
-      color: Colors.blue,
+      color: Colors.orange,
       size: 40,
     ),
   );
