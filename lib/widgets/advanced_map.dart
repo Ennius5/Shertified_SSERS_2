@@ -62,7 +62,7 @@ class AdvancedMap extends StatefulWidget {
     this.showCurrentLocation = true,
     this.showScaleBar = true,
     this.showAttribution = true,
-    this.enableRotation = true,
+    this.enableRotation = false,
     this.enablePinching = true,
     this.initialMarkers,
     this.initialPolylines,
@@ -83,9 +83,11 @@ class AdvancedMap extends StatefulWidget {
 
   @override
   State<AdvancedMap> createState() => _AdvancedMapState();
+  
 }
 
 class _AdvancedMapState extends State<AdvancedMap> with TickerProviderStateMixin {
+  Marker? _currentLocationMarker;
   late MapController _mapController;
   late MapMode _currentMode;
   late List<Marker> _markers;
@@ -93,8 +95,9 @@ class _AdvancedMapState extends State<AdvancedMap> with TickerProviderStateMixin
   late List<Polygon> _polygons;
   late List<LatLng> _pathPoints;
   LatLng? _selectedPoint;
-  LatLng? _measurementStart;
-  LatLng? _measurementEnd;
+  // LatLng? _measurementStart;
+  // LatLng? _measurementEnd;
+  List<LatLng> _measurementPoints = [];
   bool _isDrawing = false;
   bool _isMeasuring = false;
   AnimationController? _pulseController;
@@ -155,58 +158,18 @@ class _AdvancedMapState extends State<AdvancedMap> with TickerProviderStateMixin
               if (widget.onCameraMoved != null) {
                 widget.onCameraMoved!(position.center, position.zoom);
               }
+              
             },
           ),
           children: [
             // Tile Layer
             TileLayer(
-  urlTemplate: 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
-  subdomains: const ['a', 'b', 'c', 'd'],
-  userAgentPackageName: 'com.juan.ssers',
-  maxZoom: 19,
+              urlTemplate: 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
+              subdomains: const ['a', 'b', 'c', 'd'],
+              userAgentPackageName: 'com.ennius5.ssers',
+              maxZoom: 19,
             ),
             
-            // Markers Layer
-            if (_markers.isNotEmpty)
-              MarkerLayer(
-                markers: _markers,
-              ),
-            
-            // Selected Point Marker
-            if (_selectedPoint != null)
-              MarkerLayer(
-                markers: [
-                  Marker(
-                    point: _selectedPoint!,
-                    width: 60,
-                    height: 60,
-                    alignment: Alignment.center,
-                    child: _buildSelectionMarker(),
-                  ),
-                ],
-              ),
-            
-            // Measurement Markers
-            if (_measurementStart != null)
-              MarkerLayer(
-                markers: [
-                  Marker(
-                    point: _measurementStart!,
-                    width: 40,
-                    height: 40,
-                    child: _buildMeasurementMarker('A'),
-                  ),
-                  if (_measurementEnd != null)
-                    Marker(
-                      point: _measurementEnd!,
-                      width: 40,
-                      height: 40,
-                      child: _buildMeasurementMarker('B'),
-                    ),
-                ],
-              ),
-            
-            // Path/Polyline Layer
             if (_pathPoints.isNotEmpty)
               PolylineLayer(
                 polylines: [
@@ -232,15 +195,56 @@ class _AdvancedMapState extends State<AdvancedMap> with TickerProviderStateMixin
               PolygonLayer(
                 polygons: _polygons,
               ),
+            if (_currentLocationMarker != null)
+              MarkerLayer(
+                markers: [_currentLocationMarker!],
+              ),
+            // Markers Layer
+            if (_markers.isNotEmpty)
+              MarkerLayer(
+                markers: _markers,
+              ),
+            
+            // Selected Point Marker
+            if (_selectedPoint != null)
+              MarkerLayer(
+                markers: [
+                  Marker(
+                    point: _selectedPoint!,
+                    width: 60,
+                    height: 60,
+                    alignment: Alignment.center,
+                    child: _buildSelectionMarker(),
+                  ),
+                ],
+              ),
+            
+            // Measurement Markers
+            if (_measurementPoints.isNotEmpty)
+              MarkerLayer(
+                markers: List.generate(_measurementPoints.length, (index) {
+                  final point = _measurementPoints[index];
+                  return Marker(
+                    point: point,
+                    width: 40,
+                    height: 40,
+                    child: _buildMeasurementMarker(
+                      index == 0 ? '1' : '${index + 1}', // First point = 1, rest numbered
+                    ),
+                  );
+                }),
+              ),
+            
+            // Path/Polyline Layer
+
             
             // Scale Bar
             if (widget.showScaleBar)
-if (widget.showScaleBar)
-  Positioned(
-    bottom: 20,
-    left: 20,
-    child: _buildScaleBar(),
-  ),
+            Positioned(
+              bottom: 20,
+              left: 20,
+              child: _buildScaleBar(),
+            ),
             
             // Attribution
             if (widget.showAttribution)
@@ -281,7 +285,7 @@ if (widget.showScaleBar)
           ),
         
         // Measurement Result
-        if (_measurementStart != null && _measurementEnd != null)
+        if (_measurementPoints.length > 1)
           Positioned(
             bottom: 100,
             left: 20,
@@ -442,7 +446,7 @@ if (widget.showScaleBar)
   }
 
   Widget _buildMeasurementCard() {
-    final distance = _calculateDistance(_measurementStart!, _measurementEnd!);
+    final distance = _calculateTotalDistance(_measurementPoints);
     
     return Container(
       padding: const EdgeInsets.all(12),
@@ -482,8 +486,9 @@ if (widget.showScaleBar)
           TextButton(
             onPressed: () {
               setState(() {
-                _measurementStart = null;
-                _measurementEnd = null;
+                // _measurementStart = null;
+                // _measurementEnd = null;
+                _measurementPoints.clear();
                 _pathPoints.clear();
                 _isMeasuring = false;
               });
@@ -505,41 +510,35 @@ if (widget.showScaleBar)
         break;
         
       case MapMode.select:
-        setState(() {
-          _selectedPoint = point;
-        });
-        if (widget.onLocationSelected != null) {
-          widget.onLocationSelected!(point);
-        }
+          setState(() {
+            _selectedPoint = point;
+          });
+          if (widget.onLocationSelected != null) {
+            widget.onLocationSelected!(point);
+          }
         break;
         
       case MapMode.draw:
-        if (_isDrawing) {
-          setState(() {
-            _pathPoints.add(point);
-          });
-        } else {
-          _startDrawing(point);
-        }
-        break;
-        
-      case MapMode.measure:
-        if (!_isMeasuring) {
-          setState(() {
-            _measurementStart = point;
-            _isMeasuring = true;
-          });
-        } else if (_measurementStart != null && _measurementEnd == null) {
-          setState(() {
-            _measurementEnd = point;
-            _pathPoints = [_measurementStart!, _measurementEnd!];
-            _isMeasuring = false;
-          });
-          final distance = _calculateDistance(_measurementStart!, _measurementEnd!);
-          if (widget.onDistanceMeasured != null) {
-            widget.onDistanceMeasured!(distance);
+          if (_isDrawing) {
+            setState(() {
+              _pathPoints.add(point);
+            });
+          } else {
+            _startDrawing(point);
           }
-        }
+        break;
+
+      case MapMode.measure:
+          setState(() {
+            _measurementPoints.add(point);
+            _pathPoints = List.from(_measurementPoints);
+          });
+
+          final totalDistance = _calculateTotalDistance(_measurementPoints);
+
+          if (widget.onDistanceMeasured != null) {
+            widget.onDistanceMeasured!(totalDistance);
+          }
         break;
     }
   }
@@ -603,8 +602,9 @@ if (widget.showScaleBar)
   void _clearTemporaryData() {
     setState(() {
       _selectedPoint = null;
-      _measurementStart = null;
-      _measurementEnd = null;
+      // _measurementStart = null;
+      // _measurementEnd = null;
+      _measurementPoints.clear();
       _pathPoints.clear();
       _isDrawing = false;
       _isMeasuring = false;
@@ -614,8 +614,9 @@ if (widget.showScaleBar)
   void _clearAll() {
     setState(() {
       _selectedPoint = null;
-      _measurementStart = null;
-      _measurementEnd = null;
+      // _measurementStart = null;
+      // _measurementEnd = null;
+      _measurementPoints.clear();
       _pathPoints.clear();
       _markers.clear();
       _polylines.clear();
@@ -668,21 +669,39 @@ Future<void> _centerOnCurrentLocation() async {
     // 4. Move map
     _mapController.move(latLng, 16);
 
-    // 5. Save internally (optional but useful)
-    setState(() {
-      _currentCenter = latLng;
-    });
+// Add marker
+setState(() {
+  _currentCenter = latLng;
+  _currentLocationMarker = Marker(
+    point: latLng,
+    width: 50,
+    height: 50,
+    child: const Icon(
+      Icons.my_location,
+      color: Colors.blue,
+      size: 40,
+    ),
+  );
+});
 
-    // 6. 🔥 Send data out (IMPORTANT)
-    if (widget.onLocationSelected != null) {
-      widget.onLocationSelected!(latLng);
-    }
+// Send data out
+if (widget.onCurrentLocation != null) {
+  widget.onCurrentLocation!(latLng);
+}
 
   } catch (e) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text('Error getting location: $e')),
     );
   }
+}
+
+  double _calculateTotalDistance(List<LatLng> points) {
+  double total = 0;
+  for (int i = 0; i < points.length - 1; i++) {
+    total += _calculateDistance(points[i], points[i + 1]);
+  }
+  return total;
 }
 
   double _calculateDistance(LatLng start, LatLng end) {
