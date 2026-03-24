@@ -314,6 +314,55 @@ class _DashboardProfileBody extends StatelessWidget {
               ),
             ),
           ),
+          const SizedBox(height: 32),
+          ElevatedButton(
+            onPressed: () {
+              // Show logout confirmation dialog
+              showDialog(
+                context: context,
+                builder: (BuildContext context) {
+                  return AlertDialog(
+                    title: const Text('Log Out'),
+                    content: const Text('Are you sure you want to log out?'),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.of(context).pop(),
+                        child: const Text('Cancel'),
+                      ),
+                      ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.red,
+                          foregroundColor: Colors.white,
+                        ),
+                        onPressed: () {
+                          // Close dialog
+                          Navigator.of(context).pop();
+                          // Navigate to SOS monitor screen (false logout)
+                          Navigator.of(context).pushNamedAndRemoveUntil(
+                            '/lgusos',
+                            (Route<dynamic> route) => false,
+                          );
+                        },
+                        child: const Text('Log Out'),
+                      ),
+                    ],
+                  );
+                },
+              );
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+              foregroundColor: Colors.white,
+              minimumSize: const Size(double.infinity, 50),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+            child: const Text(
+              'Log Out',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
+          ),
         ],
       ),
     );

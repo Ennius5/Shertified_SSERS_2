@@ -83,10 +83,10 @@ class AdvancedMap extends StatefulWidget {
 
   @override
   State<AdvancedMap> createState() => AdvancedMapState();
-  
 }
 
-class AdvancedMapState extends State<AdvancedMap> with TickerProviderStateMixin {
+class AdvancedMapState extends State<AdvancedMap>
+    with TickerProviderStateMixin {
   Marker? _currentLocationMarker;
   late MapController _mapController;
   late MapMode _currentMode;
@@ -168,7 +168,7 @@ class AdvancedMapState extends State<AdvancedMap> with TickerProviderStateMixin 
             // Tile Layer
             TileLayer(
               urlTemplate:
-                  'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
+                  'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
               subdomains: const ['a', 'b', 'c', 'd'],
               userAgentPackageName: 'com.ennius5.ssers',
               maxZoom: 19,

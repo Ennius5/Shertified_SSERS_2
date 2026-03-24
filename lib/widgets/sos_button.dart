@@ -29,9 +29,7 @@ class _SosButtonState extends State<SosButton>
     );
 
     _controller.addStatusListener((status) {
-      if (status == AnimationStatus.completed &&
-          _isHolding &&
-          !_triggered) {
+      if (status == AnimationStatus.completed && _isHolding && !_triggered) {
         _triggered = true;
         _sendSOS();
       }
@@ -65,8 +63,9 @@ class _SosButtonState extends State<SosButton>
     _controller.reset();
 
     if (widget.contacts.isEmpty) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(const SnackBar(content: Text("No contacts set")));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("No contacts set")));
       return;
     }
 
@@ -78,13 +77,14 @@ class _SosButtonState extends State<SosButton>
       final position = await locationService.getPosition();
 
       // ✅ Build message with link
-      String locationLink =
-          locationService.buildMapLink(position.latitude, position.longitude);
+      String locationLink = locationService.buildMapLink(
+        position.latitude,
+        position.longitude,
+      );
 
       String message = "🚨 SOS! I need help!\nLocation: $locationLink";
 
-      List<String> numbers =
-          widget.contacts.map((c) => c.phone).toList();
+      List<String> numbers = widget.contacts.map((c) => c.phone).toList();
 
       // ✅ Send with latitude + longitude
       await sosService.sendSOS(
@@ -94,13 +94,13 @@ class _SosButtonState extends State<SosButton>
         longitude: position.longitude,
       );
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("SOS sent successfully!")),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("SOS sent successfully!")));
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Error sending SOS: $e")),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Error sending SOS: $e")));
     }
   }
 
@@ -126,9 +126,8 @@ class _SosButtonState extends State<SosButton>
                   child: CircularProgressIndicator(
                     value: _controller.value,
                     strokeWidth: 6,
-                    backgroundColor: Colors.white24,
-                    valueColor:
-                        const AlwaysStoppedAnimation<Color>(Colors.white),
+                    backgroundColor: Colors.white,
+                    valueColor: const AlwaysStoppedAnimation<Color>(Colors.red),
                   ),
                 );
               },

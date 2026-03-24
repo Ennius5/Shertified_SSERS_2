@@ -11,37 +11,36 @@ class SosScreen extends StatefulWidget {
 }
 
 class _SosScreenState extends State<SosScreen> {
-  final CollectionReference contactsRef =
-      FirebaseFirestore.instance.collection('contacts');
+  final CollectionReference contactsRef = FirebaseFirestore.instance.collection(
+    'contacts',
+  );
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[900],
+      backgroundColor: Colors.white,
       appBar: AppBar(
-        title: const Text("SOS Contacts"),
-        backgroundColor: Colors.grey[800],
+        // title: const Text("SOS Contacts"),
+        backgroundColor: Colors.white,
       ),
       body: StreamBuilder<QuerySnapshot>(
-  stream: contactsRef.snapshots(),
-  builder: (context, snapshot) {
-    if (!snapshot.hasData) {
-      return const Center(child: CircularProgressIndicator());
-    }
+        stream: contactsRef.snapshots(),
+        builder: (context, snapshot) {
+          if (!snapshot.hasData) {
+            return const Center(child: CircularProgressIndicator());
+          }
 
-    final contacts = snapshot.data!.docs.map((doc) {
-      final data = doc.data() as Map<String, dynamic>;
-      return EmergencyContact(
-        name: data['name'] ?? 'No Name',
-        phone: data['phone'] ?? 'No Phone',
-      );
-    }).toList();
+          final contacts = snapshot.data!.docs.map((doc) {
+            final data = doc.data() as Map<String, dynamic>;
+            return EmergencyContact(
+              name: data['name'] ?? 'No Name',
+              phone: data['phone'] ?? 'No Phone',
+            );
+          }).toList();
 
-return Center(
-  child: SosButton(contacts: contacts),
-);
-  },
-),
+          return Center(child: SosButton(contacts: contacts));
+        },
+      ),
     );
   }
 }
