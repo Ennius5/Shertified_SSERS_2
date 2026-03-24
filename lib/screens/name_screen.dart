@@ -1,4 +1,4 @@
-// name_screen.dart
+// lib/screens/name_screen.dart
 import 'package:flutter/material.dart';
 
 class NameScreen extends StatefulWidget {
@@ -10,6 +10,11 @@ class NameScreen extends StatefulWidget {
 
 class _NameScreenState extends State<NameScreen> {
   final TextEditingController _nameController = TextEditingController();
+  bool _isNameValid = true; // name validation disabled
+
+  void _validateName(String value) {
+    // name validation disabled, keep handler for compatibility
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -85,6 +90,7 @@ class _NameScreenState extends State<NameScreen> {
 
                   TextField(
                     controller: _nameController,
+                    onChanged: _validateName,
                     decoration: InputDecoration(
                       hintText: "Write your full name",
                       filled: true,
@@ -111,6 +117,7 @@ class _NameScreenState extends State<NameScreen> {
                         ),
                       ),
                       onPressed: () {
+                        // Navigate to trusted contacts
                         Navigator.pushReplacementNamed(
                           context,
                           '/trusted_contacts',

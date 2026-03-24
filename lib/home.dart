@@ -3,8 +3,6 @@ import 'package:latlong2/latlong.dart';
 import 'widgets/advanced_map.dart';
 import 'screens/sos_screen.dart';
 
-
-
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
@@ -30,9 +28,7 @@ class HomeScreen extends StatelessWidget {
             flex: 1,
             child: Container(
               color: Colors.grey[700],
-              child: Center(
-                child: SosScreen(),
-              ),
+              child: Center(child: SosScreen()),
             ),
           ),
         ],
@@ -41,26 +37,22 @@ class HomeScreen extends StatelessWidget {
   }
 }
 
-class MapScreen extends StatelessWidget{
+class MapScreen extends StatelessWidget {
   const MapScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Advanced Map'),
-      ),
+      appBar: AppBar(title: const Text('Advanced Map')),
       body: AdvancedMap(
         // 📍 Initial position (example: Davao City)
         initialLocation: const LatLng(7.0731, 125.6128),
         initialZoom: 13,
-        
 
         // ✅ Enable features
         showScaleBar: true,
         showZoomControls: true,
         showCurrentLocation: true,
-        
 
         // 🎯 Callbacks (optional but useful)
         onLocationSelected: (point) {
@@ -81,14 +73,17 @@ class MapScreen extends StatelessWidget{
 
         onCameraMoved: (center, zoom) {
           debugPrint('Camera: $center | Zoom: $zoom');
-        
-        onLocationSelected: (point) {
-          print('Lat: ${point.latitude}, Lng: ${point.longitude}');};
+
+          onLocationSelected:
+          (point) {
+            print('Lat: ${point.latitude}, Lng: ${point.longitude}');
+          };
         },
       ),
     );
   }
 }
+
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key, required this.title});
 
