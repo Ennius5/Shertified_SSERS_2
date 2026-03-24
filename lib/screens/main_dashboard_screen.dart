@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 import '../home.dart';
 import '../models/emergency_contact.dart';
-import '../storage/contact_storage.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 /// Shown after onboarding ([CompleteScreen] → `/usersos`). Hosts the map/SOS
-/// [HomeScreen] plus Contact, Notification, and Profile in one bottom bar.
+/// [HomeScreen], Contact, Notification, Profile, plus a fake incoming-call button.
 class MainDashboardScreen extends StatefulWidget {
   const MainDashboardScreen({super.key});
 
@@ -19,13 +18,37 @@ class _MainDashboardScreenState extends State<MainDashboardScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: IndexedStack(
-        index: _index,
-        children: const [
-          HomeScreen(),
-          _DashboardContactsBody(),
-          _DashboardNotificationsBody(),
-          _DashboardProfileBody(),
+      body: Column(
+        children: [
+          Expanded(
+            child: IndexedStack(
+              index: _index,
+              children: const [
+                HomeScreen(),
+                _DashboardContactsBody(),
+                _DashboardNotificationsBody(),
+                _DashboardProfileBody(),
+              ],
+            ),
+          ),
+          SafeArea(
+            top: false,
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(12, 4, 12, 4),
+              child: SizedBox(
+                width: double.infinity,
+                child: FilledButton.tonalIcon(
+                  onPressed: () => showFakeIncomingCall(context),
+                  icon: const Icon(Icons.call_received),
+                  label: const Text('Fake incoming call'),
+                  style: FilledButton.styleFrom(
+                    foregroundColor: Colors.red.shade900,
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                  ),
+                ),
+              ),
+            ),
+          ),
         ],
       ),
       bottomNavigationBar: NavigationBar(
@@ -363,6 +386,131 @@ class _DashboardProfileBody extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+/// Full-screen fake incoming call overlay (demo). Triggered from the dashboard button.
+void showFakeIncomingCall(BuildContext context) {
+  showGeneralDialog<void>(
+    context: context,
+    barrierDismissible: false,
+    barrierColor: Colors.black87,
+    transitionDuration: const Duration(milliseconds: 280),
+    pageBuilder: (ctx, animation, secondaryAnimation) {
+      return const _FakeIncomingCallOverlay();
+    },
+    transitionBuilder: (ctx, animation, secondaryAnimation, child) {
+      return FadeTransition(opacity: animation, child: child);
+    },
+  );
+}
+
+class _FakeIncomingCallOverlay extends StatelessWidget {
+  const _FakeIncomingCallOverlay();
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
+      child: SafeArea(
+        child: Column(
+          children: [
+            Align(
+              alignment: Alignment.topRight,
+              child: IconButton(
+                onPressed: () => Navigator.of(context).pop(),
+                icon: const Icon(Icons.close, color: Colors.white54),
+              ),
+            ),
+            const Spacer(),
+            const Icon(Icons.phone_in_talk, size: 28, color: Colors.white70),
+            const SizedBox(height: 12),
+            const Text(
+              'Incoming call',
+              style: TextStyle(
+                color: Colors.white70,
+                fontSize: 16,
+              ),
+            ),
+            const SizedBox(height: 8),
+            const Text(
+              'Mama',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 28,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Mobile · demo',
+              style: TextStyle(color: Colors.grey[400], fontSize: 14),
+            ),
+            const Spacer(),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  _CallCircleButton(
+                    color: Colors.redAccent,
+                    icon: Icons.call_end,
+                    label: 'Decline',
+                    onTap: () => Navigator.of(context).pop(),
+                  ),
+                  _CallCircleButton(
+                    color: Colors.green,
+                    icon: Icons.call,
+                    label: 'Accept',
+                    onTap: () => Navigator.of(context).pop(),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _CallCircleButton extends StatelessWidget {
+  const _CallCircleButton({
+    required this.color,
+    required this.icon,
+    required this.label,
+    required this.onTap,
+  });
+
+  final Color color;
+  final IconData icon;
+  final String label;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Material(
+          color: color,
+          shape: const CircleBorder(),
+          child: InkWell(
+            onTap: onTap,
+            customBorder: const CircleBorder(),
+            child: SizedBox(
+              width: 72,
+              height: 72,
+              child: Icon(icon, color: Colors.white, size: 32),
+            ),
+          ),
+        ),
+        const SizedBox(height: 8),
+        Text(label, style: const TextStyle(color: Colors.white70, fontSize: 13)),
+      ],
     );
   }
 }
