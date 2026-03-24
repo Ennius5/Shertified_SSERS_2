@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:latlong2/latlong.dart';
+import 'widgets/advanced_map.dart';
 
 void main() {
   runApp(const MyApp());
@@ -11,7 +13,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'Map Demo',
       theme: ThemeData(
         // This is the theme of your application.
         //
@@ -30,11 +32,55 @@ class MyApp extends StatelessWidget {
         // tested with just a hot reload.
         colorScheme: .fromSeed(seedColor: Colors.deepPurple),
       ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      home: const MapScreen(),
+      // home: const MyHomePage(title: 'Flutter Demo Home Page'),
     );
   }
 }
 
+class MapScreen extends StatelessWidget{
+  const MapScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Advanced Map'),
+      ),
+      body: AdvancedMap(
+        // 📍 Initial position (example: Davao City)
+        initialLocation: const LatLng(7.0731, 125.6128),
+        initialZoom: 13,
+
+        // ✅ Enable features
+        showScaleBar: true,
+        showZoomControls: true,
+        showCurrentLocation: true,
+
+        // 🎯 Callbacks (optional but useful)
+        onLocationSelected: (point) {
+          debugPrint('Selected: ${point.latitude}, ${point.longitude}');
+        },
+
+        onPathDrawn: (points) {
+          debugPrint('Path length: ${points.length}');
+        },
+
+        onDistanceMeasured: (distance) {
+          debugPrint('Distance: ${distance.toStringAsFixed(2)} meters');
+        },
+
+        onModeChanged: (mode) {
+          debugPrint('Mode changed: $mode');
+        },
+
+        onCameraMoved: (center, zoom) {
+          debugPrint('Camera: $center | Zoom: $zoom');
+        },
+      ),
+    );
+  }
+}
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key, required this.title});
 

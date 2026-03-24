@@ -1,7 +1,7 @@
 // lib/widgets/advanced_map.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
-import 'package:flutter_map/plugin_api.dart';
+
 import 'package:latlong2/latlong.dart';
 import 'dart:math' as math;
 
@@ -42,9 +42,9 @@ class AdvancedMap extends StatefulWidget {
   final Function(LatLng, double)? onCameraMoved;
   
   // Styling
-  final Color? selectionColor;
-  final Color? pathColor;
-  final Color? measurementColor;
+  final Color selectionColor;
+  final Color pathColor;
+  final Color measurementColor;
   final double pathWidth;
   final String? tileServerUrl;
   final Map<String, dynamic>? tileServerOptions;
@@ -97,8 +97,9 @@ class _AdvancedMapState extends State<AdvancedMap> with TickerProviderStateMixin
   bool _isMeasuring = false;
   AnimationController? _pulseController;
   
-  // For performance tracking
-  int _frameCount = 0;
+  // For performance tracking (unused but kept for future use)
+  // ignore: unused_field
+  final int _frameCount = 0;
   double _currentZoom = 13.0;
   LatLng _currentCenter = const LatLng(0, 0);
 
@@ -139,8 +140,6 @@ class _AdvancedMapState extends State<AdvancedMap> with TickerProviderStateMixin
             initialZoom: _currentZoom,
             minZoom: widget.minZoom,
             maxZoom: widget.maxZoom,
-            enableRotation: widget.enableRotation,
-            enablePinching: widget.enablePinching,
             interactionOptions: InteractionOptions(
               flags: _getInteractionFlags(),
             ),
@@ -162,9 +161,8 @@ class _AdvancedMapState extends State<AdvancedMap> with TickerProviderStateMixin
               urlTemplate: widget.tileServerUrl ?? 
                   'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
               userAgentPackageName: 'com.example.app',
-              tileProvider: const NetworkTileProvider(),
+              tileProvider: NetworkTileProvider(),
               subdomains: const ['a', 'b', 'c'],
-              retryOptions: const RetryOptions(maxRetries: 3),
             ),
             
             // Markers Layer
@@ -217,7 +215,7 @@ class _AdvancedMapState extends State<AdvancedMap> with TickerProviderStateMixin
                         ? widget.pathColor 
                         : widget.measurementColor,
                     strokeWidth: widget.pathWidth,
-                    isDotted: _currentMode == MapMode.measure,
+                    // isDotted not available; remove if needed
                   ),
                 ],
               ),
@@ -236,21 +234,22 @@ class _AdvancedMapState extends State<AdvancedMap> with TickerProviderStateMixin
             
             // Scale Bar
             if (widget.showScaleBar)
-              ScaleLayer(
-                lineColor: Colors.black,
-                textStyle: const TextStyle(
-                  color: Colors.black,
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
+if (widget.showScaleBar)
+  Positioned(
+    bottom: 20,
+    left: 20,
+    child: _buildScaleBar(),
+  ),
             
             // Attribution
             if (widget.showAttribution)
-              AttributionLayer(
-                text: '© OpenStreetMap contributors',
-                alignment: Alignment.bottomRight,
-                padding: const EdgeInsets.all(8),
+              RichAttributionWidget(
+                attributions: [
+                  TextSourceAttribution(
+                    '© OpenStreetMap contributors',
+                    onTap: () {},
+                  ),
+                ],
               ),
           ],
         ),
@@ -369,7 +368,7 @@ class _AdvancedMapState extends State<AdvancedMap> with TickerProviderStateMixin
         borderRadius: BorderRadius.circular(8),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.2),
+            color: Colors.black.withValues(alpha: 0.2),
             blurRadius: 4,
             offset: const Offset(0, 2),
           ),
@@ -404,7 +403,7 @@ class _AdvancedMapState extends State<AdvancedMap> with TickerProviderStateMixin
               width: 40 + (20 * _pulseController!.value),
               height: 40 + (20 * _pulseController!.value),
               decoration: BoxDecoration(
-                color: widget.selectionColor.withOpacity(0.3),
+                color: widget.selectionColor.withValues(alpha: 0.3),
                 shape: BoxShape.circle,
               ),
             ),
@@ -451,7 +450,7 @@ class _AdvancedMapState extends State<AdvancedMap> with TickerProviderStateMixin
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.3),
+            color: Colors.black.withValues(alpha: 0.3),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -661,10 +660,9 @@ class _AdvancedMapState extends State<AdvancedMap> with TickerProviderStateMixin
   }
 
   int _getInteractionFlags() {
-    int flags = 0;
+    int flags = InteractiveFlag.drag;
     if (widget.enablePinching) flags |= InteractiveFlag.pinchZoom;
     if (widget.enableRotation) flags |= InteractiveFlag.rotate;
-    flags |= InteractiveFlag.drag;
     return flags;
   }
 
@@ -742,4 +740,59 @@ class _AdvancedMapState extends State<AdvancedMap> with TickerProviderStateMixin
   void centerOnPoint(LatLng point, {double? zoom}) {
     _mapController.move(point, zoom ?? _currentZoom);
   }
+
+  Widget _buildScaleBar() {
+  // Approximate meters per pixel
+  final metersPerPixel = _getMetersPerPixel(_currentZoom, _currentCenter.latitude);
+
+  // Target ~100px width
+  final scaleWidthPx = 100.0;
+  final distanceMeters = metersPerPixel * scaleWidthPx;
+
+  final roundedDistance = _roundDistance(distanceMeters);
+
+  final adjustedWidth = roundedDistance / metersPerPixel;
+
+  return Container(
+    padding: const EdgeInsets.all(6),
+    decoration: BoxDecoration(
+      color: Colors.white.withOpacity(0.8),
+      borderRadius: BorderRadius.circular(6),
+    ),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          width: adjustedWidth,
+          height: 4,
+          color: Colors.black,
+        ),
+        const SizedBox(height: 4),
+        Text(
+          _formatDistance(roundedDistance),
+          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+        ),
+      ],
+    ),
+  );
+}
+
+double _getMetersPerPixel(double zoom, double latitude) {
+  const earthCircumference = 40075016.686; // meters
+  return earthCircumference *
+      math.cos(_toRadians(latitude)) /
+      math.pow(2, zoom + 8);
+}
+
+double _roundDistance(double distance) {
+  if (distance > 1000) {
+    return (distance / 1000).round() * 1000;
+  } else if (distance > 100) {
+    return (distance / 100).round() * 100;
+  } else if (distance > 10) {
+    return (distance / 10).round() * 10;
+  } else {
+    return distance.roundToDouble();
+  }
+}
 }
