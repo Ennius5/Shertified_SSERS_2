@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../home.dart';
 import '../models/emergency_contact.dart';
+import '../widgets/haven_wordmark.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 /// Shown after onboarding ([CompleteScreen] → `/usersos`). Hosts the map/SOS
@@ -301,23 +302,7 @@ class _DashboardProfileBody extends StatelessWidget {
       body: ListView(
         padding: const EdgeInsets.all(24),
         children: [
-          const Center(
-            child: CircleAvatar(
-              radius: 48,
-              backgroundColor: Colors.red,
-              child: Icon(Icons.shield_outlined, size: 48, color: Colors.white),
-            ),
-          ),
-          const SizedBox(height: 16),
-          const Text(
-            'HAVEN',
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 22,
-              fontWeight: FontWeight.bold,
-              color: Colors.red,
-            ),
-          ),
+          const Center(child: HavenWordmark(height: 50)),
           const SizedBox(height: 6),
           Text(
             'A Space for Safety',

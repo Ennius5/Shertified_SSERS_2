@@ -1,5 +1,6 @@
 // lib/screens/complete_screen.dart
 import 'package:flutter/material.dart';
+import '../widgets/haven_wordmark.dart';
 
 class CompleteScreen extends StatelessWidget {
   const CompleteScreen({super.key});
@@ -13,30 +14,7 @@ class CompleteScreen extends StatelessWidget {
           children: [
             const Spacer(),
             // Logo
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: const [
-                Text(
-                  "HA",
-                  style: TextStyle(
-                    fontSize: 40,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.red,
-                  ),
-                ),
-                SizedBox(width: 5),
-                Icon(Icons.shield_outlined, color: Colors.red, size: 40),
-                SizedBox(width: 5),
-                Text(
-                  "EN",
-                  style: TextStyle(
-                    fontSize: 40,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.red,
-                  ),
-                ),
-              ],
-            ),
+            const HavenWordmark(height: 60),
             const SizedBox(height: 10),
             const Text(
               "A Space for Safety",

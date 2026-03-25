@@ -1,5 +1,6 @@
 // lib/screens/trusted_contacts_screen.dart
 import 'package:flutter/material.dart';
+import '../widgets/haven_wordmark.dart';
 
 class TrustedContactsScreen extends StatefulWidget {
   const TrustedContactsScreen({super.key});
@@ -41,30 +42,7 @@ class _TrustedContactsScreenState extends State<TrustedContactsScreen> {
         children: [
           const Spacer(),
           // Logo
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: const [
-              Text(
-                "HA",
-                style: TextStyle(
-                  fontSize: 30,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.red,
-                ),
-              ),
-              SizedBox(width: 3),
-              Icon(Icons.shield_outlined, color: Colors.red, size: 30),
-              SizedBox(width: 3),
-              Text(
-                "EN",
-                style: TextStyle(
-                  fontSize: 30,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.red,
-                ),
-              ),
-            ],
-          ),
+          const HavenWordmark(height: 45),
           const SizedBox(height: 5),
           const Text(
             "A Space for Safety",
