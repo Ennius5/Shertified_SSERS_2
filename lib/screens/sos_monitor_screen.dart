@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
 import '../widgets/advanced_map.dart'; // assume SosTile is in a separate file
 
@@ -14,6 +15,44 @@ class SosMonitorScreen extends StatefulWidget {
 class _SosMonitorScreenState extends State<SosMonitorScreen> {
   final FirebaseFirestore firestore = FirebaseFirestore.instance;
   final GlobalKey<AdvancedMapState> _mapKey = GlobalKey();
+  StreamSubscription<Position>? _positionStream;
+LatLng? _activeSosPoint;
+
+void _startTracking(LatLng sosPoint) {
+  _positionStream?.cancel(); // stop previous tracking
+  _activeSosPoint = sosPoint;
+
+  _positionStream = Geolocator.getPositionStream(
+    locationSettings: const LocationSettings(
+      accuracy: LocationAccuracy.high,
+      distanceFilter: 5, // update every ~5 meters
+    ),
+  ).listen((position) {
+    final current = LatLng(position.latitude, position.longitude);
+
+    // Update markers + route
+    _mapKey.currentState?.clearMarkers();
+_mapKey.currentState?.addMarker(
+  current,
+  title: "You",
+  color: Colors.green, // 👈 respondent = green
+);
+
+_mapKey.currentState?.addMarker(
+  _activeSosPoint!,
+  title: "SOS",
+  color: Colors.red, // 👈 victim = red
+);
+
+    _mapKey.currentState?.drawRoute(current, _activeSosPoint!);
+  });
+}
+
+void _stopTracking() {
+  _positionStream?.cancel();
+  _positionStream = null;
+  _activeSosPoint = null;
+}
 
   Map<String, double> progressMap = {}; // docId -> progress
   Map<String, Timer> timerMap = {};     // docId -> timer
@@ -34,10 +73,36 @@ class _SosMonitorScreenState extends State<SosMonitorScreen> {
     return null;
   }
 
-  void _moveToLocation(LatLng point) {
-    _mapKey.currentState?.centerOnPoint(point, zoom: 16);
-    _mapKey.currentState?.addMarker(point, title: "SOS Location");
-  }
+Future<void> _moveToLocation(LatLng sosPoint) async {
+  final position = await Geolocator.getCurrentPosition(
+    locationSettings: const LocationSettings(
+      accuracy: LocationAccuracy.high,
+    ),
+  );
+
+  final current = LatLng(position.latitude, position.longitude);
+
+  // Move camera
+  _mapKey.currentState?.centerOnPoint(sosPoint, zoom: 19);
+
+  // Initial draw
+  _mapKey.currentState?.clearMarkers();
+_mapKey.currentState?.addMarker(
+  current,
+  title: "You",
+  color: Colors.green,
+);
+
+_mapKey.currentState?.addMarker(
+  sosPoint,
+  title: "SOS",
+  color: Colors.red,
+);
+  _mapKey.currentState?.drawRoute(current, sosPoint);
+
+  // 🔥 Start live tracking
+  _startTracking(sosPoint);
+}
 
   Future<void> _toggleStatus(String docId, String currentStatus) async {
     final newStatus = currentStatus == "pending" ? "resolved" : "pending";
@@ -78,11 +143,26 @@ class _SosMonitorScreenState extends State<SosMonitorScreen> {
     });
   }
 
-  @override
-  void dispose() {
-    timerMap.values.forEach((t) => t.cancel());
-    super.dispose();
+@override
+void dispose() {
+  _stopTracking(); // 🔥 prevent memory leaks
+  timerMap.values.forEach((t) => t.cancel());
+  super.dispose();
+}
+
+Future<LatLng?> _getCurrentLocation() async {
+  try {
+    final position = await Geolocator.getCurrentPosition(
+      locationSettings: const LocationSettings(
+        accuracy: LocationAccuracy.high,
+      ),
+    );
+
+    return LatLng(position.latitude, position.longitude);
+  } catch (e) {
+    return null;
   }
+}
 
   @override
   Widget build(BuildContext context) {
@@ -95,7 +175,7 @@ class _SosMonitorScreenState extends State<SosMonitorScreen> {
             child: AdvancedMap(
               key: _mapKey,
               initialLocation: const LatLng(7.92, 125.09),
-              initialZoom: 13,
+              initialZoom: 19,
             ),
           ),
           Expanded(
@@ -265,7 +345,7 @@ Widget build(BuildContext context) {
   final resolvedTimestamp = widget.data['resolvedAt'] as Timestamp?;
   String resolvedText = resolvedTimestamp != null
     ? "Resolved: ${resolvedTimestamp.toDate().toLocal().toString().split('.').first}"
-    : "Pending resolution";
+    : "Pending";
   Color tileColor =
       isPending ? Colors.red.withOpacity(0.2) : Colors.green.withOpacity(0.2);
 

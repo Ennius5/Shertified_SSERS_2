@@ -54,9 +54,9 @@ class AdvancedMap extends StatefulWidget {
     super.key,
     this.onCurrentLocation,
     this.initialLocation,
-    this.initialZoom = 13.0,
+    this.initialZoom = 18.0,
     this.minZoom = 3.0,
-    this.maxZoom = 19.0,
+    this.maxZoom = 21.0,
     this.initialMode = MapMode.view,
     this.showZoomControls = true,
     this.showCurrentLocation = true,
@@ -107,6 +107,20 @@ class AdvancedMapState extends State<AdvancedMap>
   final int _frameCount = 0;
   double _currentZoom = 13.0;
   LatLng _currentCenter = const LatLng(0, 0);
+
+void drawRoute(LatLng from, LatLng to) {
+  setState(() {
+    _polylines.clear(); // optional: remove old routes
+    _polylines.add(
+      Polyline(
+        points: [from, to],
+        color: Colors.blueAccent,
+        strokeWidth: 5,
+      ),
+    );
+  });
+}
+
 
   @override
   void initState() {
@@ -655,7 +669,7 @@ class AdvancedMapState extends State<AdvancedMap>
       final latLng = LatLng(position.latitude, position.longitude);
 
       // 4. Move map
-      _mapController.move(latLng, 16);
+      _mapController.move(latLng, 19);
 
       // Add marker
       setState(() {
@@ -664,7 +678,7 @@ class AdvancedMapState extends State<AdvancedMap>
           point: latLng,
           width: 50,
           height: 50,
-          child: const Icon(Icons.my_location, color: Colors.orange, size: 40),
+          child: const Icon(Icons.my_location, color: Colors.pink, size: 10),
         );
       });
 
@@ -756,21 +770,22 @@ class AdvancedMapState extends State<AdvancedMap>
   }
 
   // Public methods for external control
-  void addMarker(LatLng point, {String? title}) {
-    setState(() {
-      _markers.add(
-        Marker(
-          point: point,
-          width: 40,
-          height: 40,
-          child: Tooltip(
-            message: title ?? 'Marker',
-            child: const Icon(Icons.place, color: Colors.red),
-          ),
+void addMarker(LatLng point, {String? title, Color color = Colors.red}) {
+  setState(() {
+    _markers.add(
+      Marker(
+        point: point,
+        width: 40,
+        height: 40,
+        child: Icon(
+          Icons.location_pin,
+          color: color,
+          size: 40,
         ),
-      );
-    });
-  }
+      ),
+    );
+  });
+}
 
   void addPolyline(List<LatLng> points, {Color? color}) {
     setState(() {

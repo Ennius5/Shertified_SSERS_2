@@ -16,7 +16,7 @@ class HomeScreen extends StatelessWidget {
             flex: 1,
             child: AdvancedMap(
               initialLocation: const LatLng(7.0731, 125.6128),
-              initialZoom: 13,
+              initialZoom: 20,
               showScaleBar: true,
               showZoomControls: true,
               showCurrentLocation: true,
